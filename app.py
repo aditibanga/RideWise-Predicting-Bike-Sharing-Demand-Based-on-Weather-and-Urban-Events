@@ -1,4 +1,4 @@
-# Add render_template to the first line
+
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import pandas as pd
@@ -6,12 +6,12 @@ import numpy as np
 import joblib
 from datetime import datetime
 
-# Initialize the Flask application
+
 app = Flask(__name__)
-# Enable CORS to allow requests from the frontend
+
 CORS(app)
 
-# --- Load Trained Model and Supporting Files ---
+
 try:
     print("Loading model and required files...")
     lgb_model = joblib.load('lgb_model.pkl')
@@ -22,19 +22,17 @@ except FileNotFoundError:
     print("Error: Model files not found! Please run train_model.py first.")
     exit()
 
-# --- NEW: ADD A ROUTE TO SERVE THE HTML PAGE ---
+
 @app.route('/')
 def home():
     """Renders the main HTML page."""
     return render_template('index.html')
-# ---------------------------------------------
 
-# --- Define the Prediction Function ---
 def create_features_and_predict(data):
     """
     Takes a dictionary of input data, engineers features, and returns a prediction.
     """
-    # Extract data from the request
+   
     date_str = data.get('date', '2025-09-18')
     time_str = data.get('time', '18:00')
     temp_celsius = float(data.get('temp', 25.0))
@@ -42,21 +40,21 @@ def create_features_and_predict(data):
     windspeed_kmh = float(data.get('windspeed', 10.0))
     weathersit = int(data.get('weathersit', 1))
     
-    # Process date and time
+   
     dt_obj = datetime.strptime(f"{date_str} {time_str}", '%Y-%m-%d %H:%M')
     
-    # Normalize weather inputs
+   
     temp = (temp_celsius - (-8)) / (39 - (-8))
     hum = humidity_percent / 100
     windspeed = windspeed_kmh / 67
 
-    # --- Feature Engineering ---
+   
     season_map = {1:1, 2:1, 3:2, 4:2, 5:2, 6:3, 7:3, 8:3, 9:4, 10:4, 11:4, 12:1}
     season = season_map[dt_obj.month]
     yr = dt_obj.year - 2011
     mnth = dt_obj.month
     hr = dt_obj.hour
-    weekday = (dt_obj.weekday() + 1) % 7 # Convert from Mon=0 to Sun=0
+    weekday = (dt_obj.weekday() + 1) % 7 
     holiday = 1 if weekday in [0, 6] else 0
     workingday = 1 - holiday
 
@@ -74,7 +72,7 @@ def create_features_and_predict(data):
     weekday_sin = np.sin(2 * np.pi * weekday / 7.0)
     weekday_cos = np.cos(2 * np.pi * weekday / 7.0)
 
-    # Create DataFrame for prediction
+   
     input_data = {
         'temp': [temp], 'hum': [hum], 'windspeed': [windspeed],
         'hr_sin': [hr_sin], 'hr_cos': [hr_cos],
@@ -96,13 +94,13 @@ def create_features_and_predict(data):
     ]
     input_df_aligned[numerical_features] = scaler.transform(input_df_aligned[numerical_features])
 
-    # --- Prediction ---
+   
     prediction_log = lgb_model.predict(input_df_aligned)
     prediction = np.expm1(prediction_log)
     
     return int(np.round(prediction[0]))
 
-# --- Define API Endpoint ---
+
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -113,6 +111,6 @@ def predict():
         print(f"Error during prediction: {e}")
         return jsonify({'error': str(e)}), 400
 
-# --- Run the App ---
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
