@@ -6,13 +6,10 @@ import lightgbm as lgb
 import joblib
 
 def preprocess_and_train(df_hour):
-    """
-    Preprocesses the bike sharing data, trains a LightGBM model,
-    and saves the model, scaler, and column names to disk.
-    """
+   
     # --- Feature Engineering ---
     print("Starting feature engineering...")
-    # Part of day
+   
     def get_part_of_day(hour):
         if 5 <= hour <= 11: return 'Morning'
         elif 12 <= hour <= 16: return 'Afternoon'
@@ -83,7 +80,7 @@ def preprocess_and_train(df_hour):
     lgb_model.fit(X_train, y_train)
     print("Model training complete.")
 
-    # --- Save Artifacts ---
+  
     print("Saving model, scaler, and column list...")
     joblib.dump(lgb_model, 'lgb_model.pkl')
     joblib.dump(scaler, 'scaler.pkl')
