@@ -1,0 +1,10 @@
+# Python cache
+__pycache__/
+
+# Large data and model files
+*.csv
+*.pkl
+
+# IDE-specific folders
+.vscode/
+.idea/

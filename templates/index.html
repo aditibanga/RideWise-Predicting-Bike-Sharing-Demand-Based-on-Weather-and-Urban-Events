@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Rental Demand Forecaster</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'brand-green': '#10B981', // Emerald 500
+                        'brand-green-light': '#D1FAE5', // Emerald 100
+                        'brand-green-dark': '#047857', // Emerald 700
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #F0FDF4; /* Green 50 */
+        }
+        .loader {
+            border-top-color: #10B981;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-2xl mx-auto bg-white rounded-2xl shadow-2xl p-8 md:p-12 my-8 transform transition-all duration-500 hover:scale-105">
+        
+        <div class="text-center mb-10">
+            <div class="inline-block p-4 bg-brand-green-light rounded-full mb-4">
+                 <!-- Bicycle Icon SVG -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-brand-green-dark" fill="none" viewBox="0 0 256 256" stroke="currentColor">
+                    <circle cx="68" cy="180" r="28" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></circle>
+                    <circle cx="188" cy="180" r="28" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></circle>
+                    <line x1="188" y1="180" x2="160" y2="104" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></line>
+                    <polyline points="121.2 65.2 96 104 68 180" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                    <line x1="96" y1="104" x2="160" y2="104" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></line>
+                    <line x1="128" y1="104" x2="136" y2="72" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"></line>
+                </svg>
+            </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">RideWise: Bike Rental Forecaster</h1>
+            <p class="text-gray-500 mt-2">Instantly predict bike rental demand with AI.</p>
+        </div>
+
+        <form id="prediction-form" class="space-y-6">
+            <!-- Form content with updated styling -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="date" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition">
+                </div>
+                <div>
+                    <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                    <input type="time" id="time" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition">
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label for="temp" class="block text-sm font-medium text-gray-700 mb-1">Temp (°C)</label>
+                    <input type="number" id="temp" step="0.1" placeholder="25.5" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition">
+                </div>
+                <div>
+                    <label for="humidity" class="block text-sm font-medium text-gray-700 mb-1">Humidity (%)</label>
+                    <input type="number" id="humidity" placeholder="60" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition">
+                </div>
+                <div>
+                    <label for="windspeed" class="block text-sm font-medium text-gray-700 mb-1">Wind (km/h)</label>
+                    <input type="number" id="windspeed" step="0.1" placeholder="15" required class="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-brand-green transition">
+                </div>
+            </div>
+            <div>
+                <label for="weathersit" class="block text-sm font-medium text-gray-700 mb-1">Weather Situation</label>
+                <select id="weathersit" required class="mt-1 block w-full pl-3 pr-10 py-3 text-base bg-gray-50 border-gray-300 focus:outline-none focus:ring-brand-green focus:border-brand-green sm:text-sm rounded-lg transition">
+                    <option value="1">Clear / Partly Cloudy</option>
+                    <option value="2">Mist / Cloudy</option>
+                    <option value="3">Light Rain / Snow</option>
+                    <option value="4">Heavy Rain / Snow / Fog</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-lg shadow-sm text-lg font-medium text-white bg-brand-green hover:bg-brand-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green transition-transform transform hover:scale-105 duration-300">
+                    <span id="button-text">Forecast Demand</span>
+                    <div id="loader" class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6 ml-3 hidden"></div>
+                </button>
+            </div>
+        </form>
+
+        <div id="result-container" class="mt-10 text-center hidden p-6 bg-brand-green-light rounded-lg">
+             <p class="text-gray-600 text-lg">Predicted Bike Rentals:</p>
+             <p id="prediction-result" class="text-5xl font-bold text-brand-green-dark mt-2">--</p>
+        </div>
+        <div id="error-container" class="mt-6 text-left hidden"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('prediction-form');
+        const resultContainer = document.getElementById('result-container');
+        const predictionResult = document.getElementById('prediction-result');
+        const errorContainer = document.getElementById('error-container');
+        const buttonText = document.getElementById('button-text');
+        const loader = document.getElementById('loader');
+
+        const now = new Date();
+        document.getElementById('date').value = now.toISOString().split('T')[0];
+        document.getElementById('time').value = now.toTimeString().split(' ')[0].substring(0, 5);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            buttonText.textContent = 'Forecasting...';
+            loader.classList.remove('hidden');
+            form.querySelector('button').disabled = true;
+
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            errorContainer.innerHTML = '';
+
+            const formData = {
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value,
+                temp: document.getElementById('temp').value,
+                humidity: document.getElementById('humidity').value,
+                windspeed: document.getElementById('windspeed').value,
+                weathersit: document.getElementById('weathersit').value,
+            };
+
+            try {
+                // Use a relative path for the API URL. This is the key fix.
+                const apiUrl = '/predict';
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const result = await response.json();
+
+                if (result.prediction !== undefined) {
+                    predictionResult.textContent = result.prediction;
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    throw new Error(result.error || 'Prediction not found in response');
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+                errorContainer.innerHTML = `
+                    <div class="p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-lg">
+                        <p class="font-bold">Prediction Failed</p>
+                        <p>The application could not connect to the prediction server. Please ensure the backend (app.py) is running correctly and there are no errors in its terminal output.</p>
+                    </div>
+                `;
+                errorContainer.classList.remove('hidden');
+            } finally {
+                buttonText.textContent = 'Forecast Demand';
+                loader.classList.add('hidden');
+                form.querySelector('button').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
